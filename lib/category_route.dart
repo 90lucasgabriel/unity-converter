@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'backdrop.dart';
 import 'category.dart';
@@ -16,17 +19,6 @@ class _CategoryRouteState extends State<CategoryRoute> {
   Category _defaultCategory;
   Category _currentCategory;
   final _categories = <Category>[];
-
-  static const List<String> _categoryTitles = <String>[
-    'Length',
-    'Area',
-    'Volume',
-    'Mass',
-    'Time',
-    'Digital Storage',
-    'Energy',
-    'Currency',
-  ];
 
   static const List<ColorSwatch> _categoryColors = <ColorSwatch>[
     ColorSwatch(0xFF6AB7A8, {
@@ -76,21 +68,51 @@ class _CategoryRouteState extends State<CategoryRoute> {
   ];
 
   @override
-  void initState() {
-    super.initState();
-    for (var i = 0; i < _categoryTitles.length; i++) {
-      var category = Category(
-        title: _categoryTitles[i],
-        color: _categoryColors[i],
-        icon: _categoryIcons[i],
-        units: _retrieveUnitList(_categoryTitles[i]),
-      );
-
-      if (i == 0) {
-        _defaultCategory = category;
-      }
-      _categories.add(category);
+  Future<void> didChangeDependencies() async {
+    super.didChangeDependencies();
+    // We have static unit conversions located in our
+    // assets/data/units.json
+    if (_categories.isEmpty) {
+      await _retrieveLocalCategories();
     }
+  }
+
+  /// Retrieves a list of [Categories] and their [Unit]s
+  Future<void> _retrieveLocalCategories() async {
+    // Consider omitting the types for local variables. For more details on Effective
+    // Dart Usage, see https://www.dartlang.org/guides/language/effective-dart/usage
+    final json =
+        DefaultAssetBundle.of(context).loadString('assets/data/units.json');
+    final data = JsonDecoder().convert(await json);
+    if (data is! Map) {
+      throw ('Data retrieved from API is not a Map');
+    }
+    var categoryIndex = 0;
+    data.keys.forEach((key) {
+      final List<Unit> units =
+          data[key].map<Unit>((dynamic data) => Unit.fromJson(data)).toList();
+
+      var category = Category(
+        title: key,
+        units: units,
+        color: _categoryColors[categoryIndex],
+        icon: _categoryIcons[categoryIndex],
+      );
+      setState(() {
+        if (categoryIndex == 0) {
+          _defaultCategory = category;
+        }
+        _categories.add(category);
+      });
+      categoryIndex += 1;
+    });
+  }
+
+  /// Function to call when a [Category] is tapped.
+  void _onCategoryTap(Category category) {
+    setState(() {
+      _currentCategory = category;
+    });
   }
 
   Widget _buildCategoryWidgets(Orientation orientation) {
@@ -117,46 +139,19 @@ class _CategoryRouteState extends State<CategoryRoute> {
     }
   }
 
-  /// Function to call when a [Category] is tapped.
-  void _onCategoryTap(Category category) {
-    setState(() {
-      _currentCategory = category;
-    });
-  }
-
-  /// Returns a list of mock [Unit]s.
-  List<Unit> _retrieveUnitList(String categoryName) {
-    return List.generate(10, (int i) {
-      i += 1;
-      return Unit(
-        name: '$categoryName Unit $i',
-        conversion: i.toDouble(),
-      );
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    final categories = <Category>[];
-
-    for (var i = 0; i < _categoryTitles.length; i++) {
-      categories.add(Category(
-        title: _categoryTitles[i],
-        color: _categoryColors[i],
-        icon: _categoryIcons[i],
-        units: _retrieveUnitList(_categoryTitles[i]),
-      ));
+    if (_categories.isEmpty) {
+      return Center(
+        child: Container(
+          height: 180.0,
+          width: 180.0,
+          child: CircularProgressIndicator(),
+        ),
+      );
     }
 
-    for (var i = 0; i < _categoryTitles.length; i++) {
-      categories.add(Category(
-        title: _categoryTitles[i],
-        color: _categoryColors[i],
-        icon: _categoryIcons[i],
-        units: _retrieveUnitList(_categoryTitles[i]),
-      ));
-    }
-
+    assert(debugCheckHasMediaQuery(context));
     final listView = Container(
       child: _buildCategoryWidgets(MediaQuery.of(context).orientation),
       color: Colors.transparent,
