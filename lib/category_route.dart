@@ -56,15 +56,15 @@ class _CategoryRouteState extends State<CategoryRoute> {
     }),
   ];
 
-  static const List<IconData> _categoryIcons = <IconData>[
-    Icons.account_circle,
-    Icons.train,
-    Icons.theaters,
-    Icons.track_changes,
-    Icons.speaker,
-    Icons.slow_motion_video,
-    Icons.show_chart,
-    Icons.sentiment_neutral
+  static const List<String> _categoryIcons = <String>[
+    'assets/icons/length.png',
+    'assets/icons/area.png',
+    'assets/icons/volume.png',
+    'assets/icons/mass.png',
+    'assets/icons/time.png',
+    'assets/icons/digital_storage.png',
+    'assets/icons/power.png',
+    'assets/icons/currency.png',
   ];
 
   @override

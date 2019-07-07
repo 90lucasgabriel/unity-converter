@@ -4,7 +4,7 @@ import 'unit.dart';
 class Category {
   final String title;
   final ColorSwatch color;
-  final IconData icon;
+  final String icon;
   final List<Unit> units;
 
   const Category({
