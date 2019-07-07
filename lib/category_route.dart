@@ -85,7 +85,7 @@ class _CategoryRouteState extends State<CategoryRoute> {
         icon: _categoryIcons[i],
         units: _retrieveUnitList(_categoryTitles[i]),
       );
-      
+
       if (i == 0) {
         _defaultCategory = category;
       }
@@ -93,16 +93,28 @@ class _CategoryRouteState extends State<CategoryRoute> {
     }
   }
 
-  Widget _buildCategoryWidgets() {
-    return ListView.builder(
-      itemBuilder: (BuildContext context, int index) {
-        return CategoryTile(
-          category: _categories[index],
-          onTap: _onCategoryTap,
-        );
-      },
-      itemCount: _categories.length,
-    );
+  Widget _buildCategoryWidgets(Orientation orientation) {
+    if (orientation == Orientation.portrait) {
+      return ListView.builder(
+        itemBuilder: (BuildContext context, int index) {
+          return CategoryTile(
+            category: _categories[index],
+            onTap: _onCategoryTap,
+          );
+        },
+        itemCount: _categories.length,
+      );
+    } else {
+      return GridView.count(
+          crossAxisCount: 2,
+          childAspectRatio: 4.0,
+          children: _categories.map((Category c) {
+            return CategoryTile(
+              category: c,
+              onTap: _onCategoryTap,
+            );
+          }).toList());
+    }
   }
 
   /// Function to call when a [Category] is tapped.
@@ -146,7 +158,7 @@ class _CategoryRouteState extends State<CategoryRoute> {
     }
 
     final listView = Container(
-      child: _buildCategoryWidgets(),
+      child: _buildCategoryWidgets(MediaQuery.of(context).orientation),
       color: Colors.transparent,
       padding: EdgeInsets.only(
         left: 8.0,

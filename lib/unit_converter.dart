@@ -131,21 +131,7 @@ class _UnitConverterState extends State<UnitConverter> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        child: Column(
-          children: <Widget>[
-            inputGroup(context),
-            convertButton(context),
-            outputGroup(context),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget inputGroup(BuildContext context) {
-    return Padding(
+    final inputGroup = Padding(
       padding: EdgeInsets.all(_padding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -172,10 +158,8 @@ class _UnitConverterState extends State<UnitConverter> {
         ],
       ),
     );
-  }
 
-  Widget outputGroup(BuildContext context) {
-    return Padding(
+    final outputGroup = Padding(
       padding: EdgeInsets.all(_padding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -204,37 +188,34 @@ class _UnitConverterState extends State<UnitConverter> {
         ],
       ),
     );
-  }
 
-  Widget convertButton(BuildContext context) {
-    return Container(
+    final convertButton = Container(
       child: IconButton(
         icon: Icon(Icons.swap_vert),
         iconSize: 45.0,
         onPressed: () {},
       ),
     );
-  }
 
-  List getUnit(BuildContext context) {
-    return widget.category.units.map((Unit unit) {
-      return Container(
-        color: widget.category.color,
-        margin: EdgeInsets.all(8.0),
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          children: <Widget>[
-            Text(
-              unit.name,
-              style: Theme.of(context).textTheme.headline,
+    final converter = ListView(children: [
+      inputGroup,
+      convertButton,
+      outputGroup,
+    ]);
+
+    return OrientationBuilder(
+      builder: (BuildContext context, Orientation orientation) {
+        if (orientation == Orientation.portrait) {
+          return converter;
+        } else {
+          return Center(
+            child: Container(
+              width: 1000.0,
+              child: converter,
             ),
-            Text(
-              'Conversion: ${unit.conversion}',
-              style: Theme.of(context).textTheme.subhead,
-            ),
-          ],
-        ),
-      );
-    }).toList();
+          );
+        }
+      },
+    );
   }
 }
