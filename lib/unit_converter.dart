@@ -1,7 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'dropdown.dart';
+import 'package:meta/meta.dart';
+
+import 'api.dart';
 import 'category.dart';
 import 'unit.dart';
+import 'dropdown.dart';
 
 const _padding = 16.0;
 const _borderRadius = 16.0;
@@ -24,6 +29,7 @@ class _UnitConverterState extends State<UnitConverter> {
   String _convertedValue = '';
   List<DropdownMenuItem> _unitMenuItems;
   bool _showValidationError = false;
+  final _inputKey = GlobalKey(debugLabel: 'inputText');
 
   @override
   void initState() {
@@ -85,11 +91,24 @@ class _UnitConverterState extends State<UnitConverter> {
     return outputNum;
   }
 
-  void _updateConversion() {
-    setState(() {
-      _convertedValue =
-          _format(_inputValue * (_toValue.conversion / _fromValue.conversion));
-    });
+  void _updateConversion() async {
+    // Our API has a handy convert function, so we can use that for
+    // the Currency [Category]
+    if (widget.category.title == apiCategory['name']) {
+      final api = Api();
+      final conversion = await api.convert(apiCategory['route'],
+          _inputValue.toString(), _fromValue.name, _toValue.name);
+
+      setState(() {
+        _convertedValue = _format(conversion);
+      });
+    } else {
+      // For the static units, we do the conversion ourselves
+      setState(() {
+        _convertedValue = _format(
+            _inputValue * (_toValue.conversion / _fromValue.conversion));
+      });
+    }
   }
 
   void _updateInputValue(String input) {
@@ -147,6 +166,7 @@ class _UnitConverterState extends State<UnitConverter> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           TextField(
+            key: _inputKey,
             style: Theme.of(context).textTheme.display1,
             textDirection: TextDirection.rtl,
             keyboardType: TextInputType.number,
